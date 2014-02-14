@@ -61,7 +61,8 @@ jaredvacanti@gmail.com</a></p>
                 .data(cta.features.filter(function(d) { return d["geometry"]["type"] == "Point" }))
                 .enter()
                 .append("path")
-                .attr("d", path);
+                .attr("d", path)
+                .attr("stroke-width", 4).attr("opacity", 0.50).attr("fill", "red");
                 //.style("stroke", function(d) { return "#"+cta.features.properties.route_color }); 
          });
     
