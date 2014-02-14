@@ -39,8 +39,8 @@ jaredvacanti@gmail.com</a></p>
         	var path = d3.geo.path()
         				 .projection(projection);
 
-            var circle = d3.geo.circle()
-                         .projection(projection);
+            //var circle = d3.geo.circle()
+            //             .projection(projection);
 
         	var b = path.bounds(cta),
     			s = .95 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height),
@@ -57,11 +57,11 @@ jaredvacanti@gmail.com</a></p>
                 .style("stroke", function(d) { return "#"+d.properties.route_color })
                 //.style("stroke", function(d) { return "#"+cta.features.properties.route_color });
                    
-            svg.selectAll("circle")
+            svg.selectAll("path")
                 .data(cta.features.filter(function(d) { return d["geometry"]["type"] == "Point" }))
                 .enter()
-                .append("circle")
-                .attr("d", circle);
+                .append("path")
+                .attr("d", path);
                 //.style("stroke", function(d) { return "#"+cta.features.properties.route_color }); 
          });
     
