@@ -3,12 +3,12 @@
 import json
 
 
-json_data = open("cta_json.json")
+json_data = open("cta_json.json")      #import data file
 data = json.load(json_data)
 
-data_features = data['features']
+data_features = data['features']	    #specify at what level of the dictionary to work
 
-for i in range(data_features.__len__()):
+for i in range(data_features.__len__()): 	#convert each (x,y) pair to float variables
 	if data_features[i]['geometry']['coordinates'].__len__() == 2:
 		data_features[i]['geometry']['coordinates'][0]=float(data_features[i]['geometry']['coordinates'][0])
 		data_features[i]['geometry']['coordinates'][1]=float(data_features[i]['geometry']['coordinates'][1])
