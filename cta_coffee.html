@@ -19,19 +19,28 @@ h1,body,p {
 	<h1>Chicago's Best Coffee Shops</h1>
     <p><br><br><br>&nbsp;&nbsp;send comments to<a href="mailto:jaredvacanti@gmail.com?Subject=Coffee%20Map" target="_top">
 jaredvacanti@gmail.com</a></p>
+    <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>
     <script src="http://d3js.org/d3.v3.min.js"></script>
     <script>
 
         var width = window.innerWidth - 10;
-        var height = window.innerWidth -10;
+        var height = window.innerHeight -10;
 
         var svg = d3.select("body").append("svg")
                     .attr("width", width)
                     .attr("height", height)
                     .style({'stroke': 'red', 'stroke-width': 8, 'fill':'none'}); 
+
+        // Create the Google Map…
+//        var map = new google.maps.Map(d3.select("#map").node(), {
+//            zoom: 8,
+//            center: new google.maps.LatLng(41.8819, -87.6278),
+//           });
       
         d3.json("ctajson.json", function(error, cta) {
         	
+
+
         	var projection = d3.geo.albers().scale(1).translate([0,0]);
 
         	var path = d3.geo.path()
@@ -59,15 +68,15 @@ jaredvacanti@gmail.com</a></p>
                 .style("fill", function(d){
                     if(d.properties.route_id == "Red")
                         {return "C60C30"}
-                    else if(d.properties.route_id == "P")
+                    else if(d.properties.route_id == "Purple")
                         {return "522398"}
-                    else if(d.properties.route_id == "Brn")
+                    else if(d.properties.route_id == "Brown")
                         {return "62361B"}
-                    else if(d.properties.route_id == "G")
+                    else if(d.properties.route_id == "Green")
                         {return "009B3A"}
-                    else if(d.properties.route_id == "Y")
+                    else if(d.properties.route_id == "Yellow")
                         {return "F9E300"}
-                    else if(d.properties.route_id == "Org")
+                    else if(d.properties.route_id == "Orange")
                         {return "F9461C"}
                     else if(d.properties.route_id == "Blue")
                         {return "00A1DE"}
@@ -78,15 +87,15 @@ jaredvacanti@gmail.com</a></p>
                 .style("stroke", function(d){
                     if(d.properties.route_id == "Red")
                         {return "C60C30"}
-                    else if(d.properties.route_id == "P")
+                    else if(d.properties.route_id == "Purple")
                         {return "522398"}
-                    else if(d.properties.route_id == "Brn")
+                    else if(d.properties.route_id == "Brown")
                         {return "62361B"}
-                    else if(d.properties.route_id == "G")
+                    else if(d.properties.route_id == "Green")
                         {return "009B3A"}
-                    else if(d.properties.route_id == "Y")
+                    else if(d.properties.route_id == "Yellow")
                         {return "F9E300"}
-                    else if(d.properties.route_id == "Org")
+                    else if(d.properties.route_id == "Orange")
                         {return "F9461C"}
                     else if(d.properties.route_id == "Blue")
                         {return "00A1DE"}
