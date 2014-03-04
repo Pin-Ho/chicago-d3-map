@@ -37,24 +37,14 @@ jaredvacanti@gmail.com</a></p>
 //            center: new google.maps.LatLng(41.8819, -87.6278),
 //           });
       
-
-            var projection = d3.geo.albers().scale(1).translate([0,0]);
-
-            var path = d3.geo.path()
-                         .projection(projection);
-
-
-        // d3.json("neihborhoods.json", function(error, hoods) {
-        //     svg.selectAll("path")
-        //        .data(hoods.features)
-        //        .enter()
-        //        .append("path")
-        //        .attr("d", path)
-        //        .attr();
-        // });
-
         d3.json("ctajson.json", function(error, cta) {
         	
+
+
+        	var projection = d3.geo.albers().scale(1).translate([0,0]);
+
+        	var path = d3.geo.path()
+        				 .projection(projection);
 
         	var b = path.bounds(cta),
     			s = .95 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height),
@@ -113,16 +103,7 @@ jaredvacanti@gmail.com</a></p>
                         {return "E27EA6"}
                     else
                         {return "CCCCCC"}});
-
-                // svg.selectAll("path")
-                // .data(cta.features.filter(function(d) { return d["geometry"]["type"] == "Polygon" }))
-                // .enter()
-                // .append("path")
-                // .attr("d", path)
-                // .attr("stroke-width", 1).attr("opacity", 0.75)
          });
-
-        
              
     </script>
 </body>
