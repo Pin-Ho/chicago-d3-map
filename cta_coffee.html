@@ -53,15 +53,21 @@ jaredvacanti@gmail.com</a></p>
         //        .attr();
         // });
 
+
+        // load the data document -- keep all functions that require data nested in this block (asynchronous loading)
+
         d3.json("ctajson.json", function(error, cta) {
         	
 
+            // calculate window zoom & scale -- should be reusable with other d3.js documents
         	var b = path.bounds(cta),
     			s = .95 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height),
     			t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2];
 
+            // use calculated values to actually project
         	projection.scale(s).translate(t); 
 
+            // d3 paradigm -- select the element to create
             svg.selectAll("path")
                 .data(cta.features.filter(function(d) { return d["geometry"]["type"] == "LineString" }))
                 .enter()
@@ -75,7 +81,7 @@ jaredvacanti@gmail.com</a></p>
                 .append("path")
                 .attr("d", path)
                 .attr("stroke-width", 4).attr("opacity", 0.75)
-                .style("fill", function(d){
+                .style("fill", function(d){                             // hard coded route colos
                     if(d.properties.route_id == "Red")
                         {return "C60C30"}
                     else if(d.properties.route_id == "Purple")
