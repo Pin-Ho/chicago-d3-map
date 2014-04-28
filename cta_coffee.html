@@ -2,16 +2,38 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,800' rel='stylesheet' type='text/css'>
 </head>
 
 <style type="text/css">
 
-h1,body,p {
-	position:absolute;
-	top:0
+h1, body,p {
+    position: fixed;
+	top:0;
 	left:0;
-	font-family: Georgia, serif;
+	font-family: 'Open Sans';
     font-size: 100%;
+}
+
+h1 {
+    font-size: 200%;
+    padding-left: 10px;
+    font-weight: 300;
+    margin-top:15px;
+}
+
+p {
+    top:50px;
+    padding-left: 15px;
+}
+
+.home {
+  position: fixed;
+  right:0;
+  top:0;
+  text-align: right;
+  padding-right:15px;
+  padding-top:5px;
 }
 
 .d3-tip {
@@ -26,63 +48,45 @@ h1,body,p {
 }
 
 .station:hover {
- stroke-width: 10px;
+ stroke-width: 8px;
  opacity: 1.0;
+}
+
+.train-inset {
+  position:fixed;
+  left:0;
+  bottom:0;
 }
 
 </style>
 
 <body>
+          <p class="home"><a href="http://jaredvacanti.com">Go back home</a><p>
+
 	<h1>Chicago's Best Coffee Shops</h1>
-    <p><br><br><br>&nbsp;&nbsp;send comments to
-        <a href="mailto:jaredvacanti@gmail.com?Subject=Coffee%20Map" target="_top">jaredvacanti@gmail.com</a></p>
-    
-    <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>
+    <p>Send comments to
+        <a href="mailto:jaredvacanti@gmail.com?Subject=Coffee%20Map" target="_top">jaredvacanti@gmail.com</a><br>Click on CTA Stations for additional info.</p>
     <script src="http://d3js.org/d3.v3.min.js"></script>
-    <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+
     <script>
 
         var width = window.innerWidth - 10;
         
-        var height = window.innerHeight -10;
+        var height = window.innerHeight - 50; 
 
         var svg = d3.select("body").append("svg")
                     .attr("width", width)
                     .attr("height", height)
-                    .style({'stroke': 'red', 'stroke-width': 8, 'fill':'none'}); 
+                    .style({'margin-top': 30,'margin-bottom': 20, 'stroke': 'red', 'stroke-width': 6, 'fill':'none'});
 
-        /* Create the Google Map object */
-       // var map = new google.maps.Map(d3.select("#map").node(), {
-       //     zoom: 8,
-       //     center: new google.maps.LatLng(41.8819, -87.6278),
-       //  });
-      
+        /* Main Map */
 
         var projection = d3.geo.albers().scale(1).translate([0,0]);
 
         var path = d3.geo.path()
                      .projection(projection);
 
-        var tip = d3.tip()
-            .attr('class', 'd3-tip')
-            .offset([-15, 0])
-            .html(function(d) {
-              return "<strong>CTA:</strong> <span style='color:white'>" + d.properties.name + "</span><br>Best Coffee";
-            });
-
-
-        // d3.json("neihborhoods.json", function(error, hoods) {
-        //     svg.selectAll("path")
-        //        .data(hoods.features)
-        //        .enter()
-        //        .append("path")
-        //        .attr("d", path)
-        //        .attr();
-        // });
-
-
         /* load the data document - keep all functions that require data nested in this block, asynchronous loading */
-
         d3.json("ctajson.json", function(error, cta) {
         	
 
@@ -92,74 +96,34 @@ h1,body,p {
     			t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2];
 
             /* use calculated values to actually project */
-        	projection.scale(s).translate(t); 
+        projection.scale(s).translate(t); 
 
             /* d3 paradigm -- select the element to create */
-            svg.selectAll("path")
-                .data(cta.features.filter(function(d) { return d["geometry"]["type"] == "LineString" }))
-                .enter()
-                .append("path")
-                .attr("d", path)
-                .style("stroke", function(d) { return "#"+d.properties.route_color })
+
+        svg.selectAll("path")
+              .data(cta.features.filter(function(d) { return d["geometry"]["type"] == "LineString" }))
+              .enter()
+              .append("path")
+              .attr("d", path)
+              .style("stroke", function(d) { return "#"+d.properties.route_color })
+
+        svg.selectAll("path")
+            .data(cta.features.filter(function(d) { return d["geometry"]["type"] == "Point" }))
+            .enter()
+            .append("path")
+            .attr("d", path)
+            .attr('class', 'station')
+            .attr("stroke-width", 3).attr("opacity", 0.75)
+            .style("fill", function(d){                           
+                return d.properties.route_id})
+            .style("stroke", function(d){
+                return d.properties.route_id})
+            
+// Chicago coordinates, leaving here for reference[-87.6500500,41.8500300]
                    
-            svg.selectAll("path")
-                .data(cta.features.filter(function(d) { return d["geometry"]["type"] == "Point" }))
-                .enter()
-                .append("path")
-                .attr("d", path)
-                .attr('class', 'station')
-                .attr("stroke-width", 4).attr("opacity", 0.75)
-                .style("fill", function(d){                             // hard coded route colors 
-                    if(d.properties.route_id == "Red")                  // bad practice, needs to be changed
-                        {return "C60C30"}                               // edit the json to have hex colors
-                    else if(d.properties.route_id == "Purple")          // instead of words
-                        {return "522398"}
-                    else if(d.properties.route_id == "Brown")
-                        {return "62361B"}
-                    else if(d.properties.route_id == "Green")
-                        {return "009B3A"}
-                    else if(d.properties.route_id == "Yellow")
-                        {return "F9E300"}
-                    else if(d.properties.route_id == "Orange")
-                        {return "F9461C"}
-                    else if(d.properties.route_id == "Blue")
-                        {return "00A1DE"}
-                    else if(d.properties.route_id == "Pink")
-                        {return "E27EA6"}
-                    else
-                        {return "CCCCCC"}})
-                .style("stroke", function(d){
-                    if(d.properties.route_id == "Red")
-                        {return "C60C30"}
-                    else if(d.properties.route_id == "Purple")
-                        {return "522398"}
-                    else if(d.properties.route_id == "Brown")
-                        {return "62361B"}
-                    else if(d.properties.route_id == "Green")
-                        {return "009B3A"}
-                    else if(d.properties.route_id == "Yellow")
-                        {return "F9E300"}
-                    else if(d.properties.route_id == "Orange")
-                        {return "F9461C"}
-                    else if(d.properties.route_id == "Blue")
-                        {return "00A1DE"}
-                    else if(d.properties.route_id == "Pink")
-                        {return "E27EA6"}
-                    else
-                        {return "CCCCCC"}})
-
-
-
-                // svg.selectAll("path")
-                // .data(cta.features.filter(function(d) { return d["geometry"]["type"] == "Polygon" }))
-                // .enter()
-                // .append("path")
-                // .attr("d", path)
-                // .attr("stroke-width", 1).attr("opacity", 0.75)
-         });
-
-        
-             
+           
+         });        
     </script>
+
 </body>
 </html>
