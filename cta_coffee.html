@@ -7,122 +7,237 @@
 
 <style type="text/css">
 
-h1, body,p {
-    position: fixed;
-	top:0;
-	left:0;
-	font-family: 'Open Sans';
+body {
+	  font-family: 'Open Sans';
     font-size: 100%;
 }
 
 h1 {
+    position:fixed;
+    display: inline;
+    font-family: 'Open Sans';
     font-size: 200%;
     padding-left: 10px;
     font-weight: 300;
     margin-top:15px;
 }
 
-p {
+.byline {
     top:50px;
     padding-left: 15px;
+    position: fixed;
+    display: inline;
+    font-family: 'Open Sans';
+    font-size: 100%;
 }
 
 .home {
-  position: fixed;
-  right:0;
-  top:0;
-  text-align: right;
-  padding-right:15px;
-  padding-top:5px;
+    position: fixed;
+    right:0;
+    top:0;
+    text-align: right;
+    padding-right:15px;
+    padding-top:5px;
 }
 
-.d3-tip {
-  line-height: 1;
-  font-weight: bold;
-  padding: 12px;
-  background: rgba(0, 0, 0, 0.8);
-  color: #fff;
-  border-radius: 2px;
-  font-size: 12px;
-  line-height: 150%;
+.station {
+    stroke-width: 3;
+    opacity: 0.75;
 }
 
 .station:hover {
- stroke-width: 8px;
- opacity: 1.0;
+    stroke-width: 8px;
+    opacity: 1.0;
 }
 
 .train-inset {
-  position:fixed;
-  left:0;
-  bottom:0;
+    position:fixed;
+    left:40px;
+    bottom:40px;
+    border:1px solid;
+    border-color: black;
+    box-shadow: 4px 4px 20px #888888;
+    background-color: white;
+}
+
+#tooltip {
+    position: fixed;
+    width: 200px;
+    height: auto;
+    padding: 8px;
+    background-color: white;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+    -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+}
+
+#tooltip.hidden {
+    display: none;
+}
+
+#tooltip p {
+    margin-left: 10px;
+    font-family: 'Open Sans';
+    font-weight: 400;
+    font-size: 12px;
+    text-align: left;
+    margin-top: 3px;
+margin-bottom: 3px;
 }
 
 </style>
 
 <body>
-          <p class="home"><a href="http://jaredvacanti.com">Go back home</a><p>
 
+  <p class="home"><span id="clear"><a href="#" onclick="return false;">Clear</a></span> | <a href="http://jaredvacanti.com">Back home</a></p>
 	<h1>Chicago's Best Coffee Shops</h1>
-    <p>Send comments to
-        <a href="mailto:jaredvacanti@gmail.com?Subject=Coffee%20Map" target="_top">jaredvacanti@gmail.com</a><br>Click on CTA Stations for additional info.</p>
+    <p class="byline">Send comments to <a href="mailto:jaredvacanti@gmail.com?Subject=Coffee%20Map" target="_top">jaredvacanti@gmail.com</a><br>Click on CTA Stations for additional info</p>
     <script src="http://d3js.org/d3.v3.min.js"></script>
-
+    <div class="train-inset">
+      <span style="position:fixed; font-size: 300%; font-weight: lighter; opacity: .1; margin:auto;">The Loop</span></div>
+    <div id="tooltip" class="hidden">
+        <p><strong>CTA Station:</strong>
+        <span id="value">Name</span><br><span id="shop-name">Shop Link</span></p>
+    </div>
+    
+    
     <script>
+        window.onresize = function(){ location.reload(); };
+
+        var insetWidth = 240;
+        var insetHeight = 280;
 
         var width = window.innerWidth - 10;
-        
         var height = window.innerHeight - 50; 
 
-        var svg = d3.select("body").append("svg")
+        var svg_body = d3.select("body").append("svg")
                     .attr("width", width)
                     .attr("height", height)
                     .style({'margin-top': 30,'margin-bottom': 20, 'stroke': 'red', 'stroke-width': 6, 'fill':'none'});
 
-        /* Main Map */
+        var svg_inset = d3.select(".train-inset").append("svg")
+                    .attr("width", insetWidth)
+                    .attr("height", insetHeight)
+                    .style({'stroke': 'red', 'stroke-width': 6, 'fill':'none'});
+
+        /* Create projections and path elements for main & inset maps */
 
         var projection = d3.geo.albers().scale(1).translate([0,0]);
 
         var path = d3.geo.path()
                      .projection(projection);
 
+        var projection_inset = d3.geo.albers().scale(1).translate([0,0]);
+
+        var path_inset = d3.geo.path()
+                     .projection(projection_inset);
+
         /* load the data document - keep all functions that require data nested in this block, asynchronous loading */
         d3.json("ctajson.json", function(error, cta) {
         	
+          /* calculate window zoom & scale -- should be reusable with other d3.js documents */
+          var b = path.bounds(cta),
+      		s = .95 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height),
+      		t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2];
 
-            /* calculate window zoom & scale -- should be reusable with other d3.js documents */
-        	var b = path.bounds(cta),
-    			s = .95 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height),
-    			t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2];
+          projection.scale(s).translate(t); 
 
-            /* use calculated values to actually project */
-        projection.scale(s).translate(t); 
+          /* select the element to create */
+          svg_body.selectAll("path")
+                .data(cta.features.filter(function(d) { return d["geometry"]["type"] == "LineString" }))
+                .enter()
+                .append("path")
+                .attr("d", path)
+                .style("stroke", function(d) { return "#"+d.properties.route_color })
 
-            /* d3 paradigm -- select the element to create */
-
-        svg.selectAll("path")
-              .data(cta.features.filter(function(d) { return d["geometry"]["type"] == "LineString" }))
+          svg_body.selectAll("path")
+              .data(cta.features.filter(function(d) { return d["geometry"]["type"] == "Point" }))
               .enter()
               .append("path")
               .attr("d", path)
-              .style("stroke", function(d) { return "#"+d.properties.route_color })
+              .attr('class', 'station')
+              .style("fill", function(d){                           
+                  return d.properties.route_id})
+              .style("stroke", function(d){
+                  return d.properties.route_id})
+              
+              .on("click", function(d) {
+                //Update the tooltip position and value
+                    var location = d3.mouse(this);
+                    var xPosition = location[0];
+                    var yPosition = location[1];
+                    console.log("d3 x position is " + xPosition);
+                    console.log("d3 y positions is " + yPosition);
+                        
+                    d3.select("#tooltip")
+                      .style("left", xPosition +15+ "px")     
+                      .style("top", yPosition + "px")
+                      .style("bottom", "inherit")
+                      .select("#value")
+                      .text(d.properties.name)
+                      .select("#shop-name")
+                      .text(d.properties.stop_id);
 
-        svg.selectAll("path")
-            .data(cta.features.filter(function(d) { return d["geometry"]["type"] == "Point" }))
-            .enter()
-            .append("path")
-            .attr("d", path)
-            .attr('class', 'station')
-            .attr("stroke-width", 3).attr("opacity", 0.75)
-            .style("fill", function(d){                           
-                return d.properties.route_id})
-            .style("stroke", function(d){
-                return d.properties.route_id})
-            
-// Chicago coordinates, leaving here for reference[-87.6500500,41.8500300]
-                   
-           
-         });        
+                    d3.select("#tooltip").classed("hidden", false);
+                  })          
+              });        
+
+        d3.json("cta_inset.json", function(error, cta) {
+          
+          /* this was just tinkered with until the scale was right after initial guess, need better method */
+          /* scale zooms in, translate [ smaller -> left, larger -> up] */
+          projection_inset.scale(880300).translate([-101910, 53620] );
+          
+          /* select the element to create */
+          svg_inset.selectAll("path_inset")
+                .data(cta.features.filter(function(d) { return d["geometry"]["type"] == "LineString" }))
+                .enter()
+                .append("path")
+                .attr("d", path_inset)
+                .style("stroke", function(d) { return "#"+d.properties.route_color })
+
+          svg_inset.selectAll("path_inset")
+              .data(cta.features.filter(function(d) { return d["geometry"]["type"] == "Point" }))
+              .enter()
+              .append("path")
+              .attr("d", path_inset)
+              .attr('class', 'station')
+              .style("fill", function(d){                           
+                  return d.properties.route_id})
+              .style("stroke", function(d){
+                  return d.properties.route_id})
+              .on("click", function(d) {
+                //Update the tooltip position and value, specific to the inset
+                    var location = d3.mouse(this);
+                    var xPosition = location[0];
+                    var yPosition = location[1];
+                    var y_bottom = 320 - yPosition;
+                    var x_inset = 45 + xPosition;
+
+                    d3.select("#tooltip")
+                      .style("left", x_inset + "px")     
+                      .style("bottom", y_bottom + "px")
+                      .style("top", "inherit")
+                      .select("#value")
+                      .text(d.properties.name)
+                      .select("#shop-name")
+                      .text(d.properties.stop_id);
+
+                    d3.select("#tooltip").classed("hidden", false);
+                  })    
+        
+        // Chicago coordinates, leaving here for reference[-87.6500500,41.8500300]          
+         
+         });
+        
+        d3.select("#clear").on('click',function(){
+            d3.select("#tooltip").classed("hidden", true);
+        });
+    
     </script>
 
 </body>
