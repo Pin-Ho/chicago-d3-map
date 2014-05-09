@@ -62,7 +62,7 @@ h1 {
 
 #tooltip {
     position: fixed;
-    width: 200px;
+    width: auto;
     height: auto;
     padding: 8px;
     background-color: white;
@@ -73,6 +73,7 @@ h1 {
     -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
     box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
     pointer-events: none;
+    z-index: 1;
 }
 
 #tooltip.hidden {
@@ -81,6 +82,7 @@ h1 {
 
 #tooltip p {
     margin-left: 10px;
+    margin-right:5px;
     font-family: 'Open Sans';
     font-weight: 400;
     font-size: 12px;
@@ -92,16 +94,25 @@ margin-bottom: 3px;
 </style>
 
 <body>
+  <img src="thumbnail.png" style="display:none;">
 
   <p class="home"><span id="clear"><a href="#" onclick="return false;">Clear</a></span> | <a href="http://jaredvacanti.com">Back home</a></p>
 	<h1>Chicago's Best Coffee Shops</h1>
+    
     <p class="byline">Send comments to <a href="mailto:jaredvacanti@gmail.com?Subject=Coffee%20Map" target="_top">jaredvacanti@gmail.com</a><br>Click on CTA Stations for additional info</p>
+    
     <script src="http://d3js.org/d3.v3.min.js"></script>
+    
     <div class="train-inset">
-      <span style="position:fixed; font-size: 300%; font-weight: lighter; opacity: .1; margin:auto;">The Loop</span></div>
+      <span style="position:fixed; font-size: 300%; font-weight: lighter; opacity: .1; margin:auto; z-index:-1;">The Loop</span></div>
+    
     <div id="tooltip" class="hidden">
-        <p><strong>CTA Station:</strong>
-        <span id="value">Name</span><br><span id="shop-name">Shop Link</span></p>
+        <p><strong><span id="shop-name">Name</span></strong> - <span id="phone" style="text-align:right;">Number</span><br>
+          <strong id="station-header">CTA Station:</strong>
+       <span id="value">Station</span>
+          <br><span id="address">Address</span>
+          <br><a id="link"></a>
+        </p>
     </div>
     
     
@@ -166,21 +177,30 @@ margin-bottom: 3px;
                   return d.properties.route_id})
               
               .on("click", function(d) {
+
                 //Update the tooltip position and value
                     var location = d3.mouse(this);
                     var xPosition = location[0];
                     var yPosition = location[1];
-                    console.log("d3 x position is " + xPosition);
-                    console.log("d3 y positions is " + yPosition);
                         
                     d3.select("#tooltip")
-                      .style("left", xPosition +15+ "px")     
-                      .style("top", yPosition + "px")
+                      .style("left", xPosition + 20 + "px")     
+                      .style("top", yPosition - 20 + "px")
                       .style("bottom", "inherit")
                       .select("#value")
-                      .text(d.properties.name)
-                      .select("#shop-name")
-                      .text(d.properties.stop_id);
+                      .text(d.properties.name);
+                    
+                    d3.select("#station-header")
+                      .style("color", "#"+d.properties.route_id);
+                    d3.select("#shop-name")
+                      .text(d.properties.shop_name);
+                    d3.select("#phone")
+                      .text(d.properties.phone);
+                    d3.select("#address")
+                      .text(d.properties.address);
+                    d3.select("#link")
+                      .attr('href',"http://"+d.properties.link)
+                      .text(d.properties.link);
 
                     d3.select("#tooltip").classed("hidden", false);
                   })          
@@ -215,17 +235,27 @@ margin-bottom: 3px;
                     var location = d3.mouse(this);
                     var xPosition = location[0];
                     var yPosition = location[1];
-                    var y_bottom = 320 - yPosition;
-                    var x_inset = 45 + xPosition;
+                    var y_bottom = 335 - yPosition;
+                    var x_inset = 55 + xPosition;
 
                     d3.select("#tooltip")
                       .style("left", x_inset + "px")     
                       .style("bottom", y_bottom + "px")
                       .style("top", "inherit")
                       .select("#value")
-                      .text(d.properties.name)
-                      .select("#shop-name")
-                      .text(d.properties.stop_id);
+                      .text(d.properties.name);
+
+                    d3.select("#station-header")
+                      .style("color", "#"+d.properties.route_id);
+                    d3.select("#shop-name")
+                      .text(d.properties.shop_name);
+                    d3.select("#phone")
+                      .text(d.properties.phone);
+                    d3.select("#address")
+                      .text(d.properties.address);
+                    d3.select("#link")
+                      .attr('href',"http://"+d.properties.link)
+                      .text(d.properties.link);
 
                     d3.select("#tooltip").classed("hidden", false);
                   })    
